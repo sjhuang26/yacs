@@ -5,10 +5,8 @@
  * @return {undefined}
  * @memberOf Yacs.views
  */
-'use strict';
-
 Yacs.views.courses = function (target, params) {
-  params['show_sections'] = params['show_periods'] = true;
+  params.show_sections = params.show_periods = true;
 
   /**
    * When a section is clicked, toggle whether it is selected.
@@ -18,27 +16,22 @@ Yacs.views.courses = function (target, params) {
    */
   var bindListeners = function () {
     Yacs.on('click', target.querySelectorAll('section'), function (section) {
-      if (! Yacs.user.removeSelection(section.dataset.id)) {
+      Yacs.user.removeSelection(section.dataset.id) ||
         Yacs.user.addSelection(section.dataset.id);
-      }
     });
 
     Yacs.on('click', target.querySelectorAll('course-info'), function (courseInfo) {
       var courseSelected = courseInfo.parentElement.classList.contains('selected');
-      var sections;
       if (courseSelected) {
-        sections = courseInfo.parentElement.querySelectorAll('section');
-        var sectionsToRemove = sections.map(function (section) {
+        var sections = courseInfo.parentElement.querySelectorAll('section');
+        Yacs.user.removeSelections(map(sections, function (section) {
           return section.dataset.id;
-        });
-        Yacs.user.removeSelections(sectionsToRemove);
-      }
-      else {
-        sections = courseInfo.parentElement.querySelectorAll('section:not(.closed)');
-        var sectionsToAdd = sections.map(function (section) {
+        }));
+      } else {
+        var sections = courseInfo.parentElement.querySelectorAll('section:not(.closed)');
+        Yacs.user.addSelections(map(sections, function (section) {
           return section.dataset.id;
-        });
-        Yacs.user.addSelections(sectionsToAdd);
+        }));
       }
     });
   };
@@ -49,17 +42,16 @@ Yacs.views.courses = function (target, params) {
    */
   var updateSelected = function () {
     var selected = Yacs.user.getSelections();
-    target.querySelectorAll('course').forEach(function (course) {
+    each(target.querySelectorAll('course'), function (course) {
       var courseSelected = false;
       var sections = course.querySelectorAll('section');
       if (sections.length > 0) {
         courseSelected = true;
-        sections.forEach(function (section) {
+        each(sections, function (section) {
           var sectionSelected = selected.indexOf(section.dataset.id) !== -1;
           section.classList.toggle('selected', sectionSelected);
-          if (!sectionSelected && !section.classList.contains('closed')) {
+          if (!sectionSelected && !section.classList.contains('closed'))
             courseSelected = false;
-          }
         });
       }
       course.classList.toggle('selected', courseSelected);
@@ -68,7 +60,7 @@ Yacs.views.courses = function (target, params) {
 
   Yacs.models.courses.query(params, function (data, success) {
     if (success) {
-      Yacs.render(target, 'courses', data);
+      Yacs.render(target, 'courses', data)
       Yacs.observe('selection', document.querySelector('courses'), updateSelected);
       bindListeners();
       updateSelected();

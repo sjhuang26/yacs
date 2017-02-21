@@ -1,5 +1,3 @@
-'use strict';
-
 Yacs.router = new function () {
   var self = this;
 
@@ -7,12 +5,10 @@ Yacs.router = new function () {
 
   var queryToHash = function (queryString) {
     var paramsHash = {};
-    var newString = queryString.replace(/^(\?|&)+|&+$/g, '');
-    newString.split('&').forEach(function (entry) {
-      var param = entry.split('=');
-      if (param[0].length > 0) {
-        paramsHash[param[0]] = param[1];
-      }
+    queryString = queryString.replace(/^(\?|\&)+|\&+$/g, '');
+    queryString.split('&').forEach(function (entry) {
+      entry = entry.split('=');
+      if (entry[0].length) paramsHash[entry[0]] = entry[1];
     });
     return paramsHash;
   };
@@ -30,14 +26,7 @@ Yacs.router = new function () {
       var resource = window.location.hash.slice(1).split('?');
       var path = resource[0].length ? resource[0] : '/';
       var params = resource[1] || '';
-      if (routes[path]) {
-        routes[path](queryToHash(params));
-      }
-
-      // handle case i.e. /schedules/ when only /schedules is defined
-      else if (path.slice(-1) === '/' && routes[path.slice(0, -1)]) {
-        routes[path.slice(0, -1)](queryToHash(params));
-      }
+      if (routes[path]) routes[path](queryToHash(params));
     };
     window.addEventListener('hashchange', onChange, false);
     onChange();

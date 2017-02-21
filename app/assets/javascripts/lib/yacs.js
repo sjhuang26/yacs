@@ -1,7 +1,3 @@
-'use strict';
-
-/* TODO: REMOVE THESE WHEN ESLINTING IS FINISHED */
-
 window.each = function (arr, func) {
   if (arr.length === undefined)
     arr = [arr];
@@ -22,7 +18,7 @@ window.map = function (arr, func) {
  * @description
  * YACS singleton. This object is the top-level namespace for all YACS functionality.
  */
-window.Yacs = new function () {
+Yacs = new function () {
   var self = this;
 
 /* ======================================================================== *
@@ -39,10 +35,10 @@ window.Yacs = new function () {
     var req = new XMLHttpRequest();
     req.open('GET', uri);
     req.onreadystatechange = function () {
-      if (req.readyState === 4 && callback) {
-        callback(req.responseText, req.status === 200);
+      if (req.readyState == 4 && callback) {
+        callback(req.responseText, req.status == 200)
       }
-    };
+    }
     req.send();
   };
 
@@ -54,13 +50,11 @@ window.Yacs = new function () {
    * @return {undefined}
    */
   self.api = function (model, params, callback) {
-    var query = '?';
+    var query = "?";
     for (var param in params) {
       if (params.hasOwnProperty(param)) {
         var val = params[param];
-        if (Array.isArray(val)) {
-          val = val.join(',');
-        }
+        if (Array.isArray()) val = val.join(',')
         query += param + '=' + val + '&';
       }
     }
@@ -75,7 +69,6 @@ window.Yacs = new function () {
  * ======================================================================== */
 
   self.models = { };
-
   /**
    * @constructor Model
    * @description
@@ -85,8 +78,8 @@ window.Yacs = new function () {
    * @param {String} [options.has_many] - name of one-to-many association
    * @memberOf Yacs
    */
-  var Model = function (name, initOptions) {
-    var options = initOptions || {};
+  var Model = function (name, options) {
+    options = options || {};
     var self = this;
     var childParam = 'show_' + options.has_many;
 
@@ -94,10 +87,7 @@ window.Yacs = new function () {
      * Stores preloaded members of the collection for synchronous access
      * @type {Object}
      */
-    self.store = {
-      all: [],
-      id: {}
-    };
+    self.store = { all: [], id: {} };
     self.preloaded = false;
 
     /**
@@ -119,9 +109,8 @@ window.Yacs = new function () {
      */
     self.preload = function (callback) {
       var params = {};
-      if (options.has_many) {
+      if (options.has_many)
         params[childParam] = true;
-      }
       self.query(params, function (data, success) {
         if (success) {
           var models = data[name];
@@ -138,13 +127,12 @@ window.Yacs = new function () {
               Yacs.models[options.has_many].store.all = children;
             }
           }
-          self.preloaded = true;
+          preloaded = true;
         }
-        if (callback) {
+        if (callback)
           callback(data, success);
-        }
       });
-    };
+    }
   };
 
   /**
@@ -154,9 +142,8 @@ window.Yacs = new function () {
    * @memberOf Yacs
    */
   var addModel = function (name, options) {
-    self.models[name] = new Model(name, options);
-    return self.models[name];
-  };
+    return self.models[name] = new Model(name, options);
+  }
 
   addModel('schools', { has_many: 'departments' });
   addModel('departments');
@@ -182,8 +169,8 @@ window.Yacs = new function () {
    * @memberOf Yacs
    */
   self.onload = function (func) {
-    document.addEventListener('DOMContentLoaded', func, false);
-  };
+    document.addEventListener("DOMContentLoaded", func, false);
+  }
 
   /**
    * @param  {String} eventType - name of event
@@ -206,19 +193,9 @@ window.Yacs = new function () {
 }();
 
 /* ======================================================================== *
-    initializers
+    Initializers
  * ======================================================================== */
 
 Yacs.onload(function () {
   Yacs.views.root(document.getElementById('content'));
 });
-
-/* ======================================================================== *
-    any other top level code
- * ======================================================================== */
-
-/* This is a temporary fix because NodeLists do not currently support
- * forEach()/map() iteration, except in recent versions of Firefox and Chrome.
- * Remove these if it is supported in all browsers YACS supports. */
-NodeList.prototype.map = Array.prototype.map;
-NodeList.prototype.forEach = Array.prototype.forEach;
